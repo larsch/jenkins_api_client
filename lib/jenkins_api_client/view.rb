@@ -20,6 +20,8 @@
 # THE SOFTWARE.
 #
 
+require 'uri'
+
 module JenkinsApi
   class Client
     # This class communicates with Jenkins "/view" API and used to create,
@@ -40,6 +42,12 @@ module JenkinsApi
       #
       def to_s
         "#<JenkinsApi::Client::View>"
+      end
+
+      # Return the request path for a view
+      #
+      def request_path(view_name)
+        "/view/#{URI.encode_www_form_component view_name}"
       end
 
       # Creates a new empty view of the given type
@@ -139,7 +147,7 @@ module JenkinsApi
         post_params.merge!("filterExecutors" => "on") if params[:filter_executors]
         post_params.merge!("useincluderegex" => "on",
                            "includeRegex" => params[:regex]) if params[:regex]
-        @client.api_post_request("/view/#{params[:name]}/configSubmit",
+        @client.api_post_request("#{request_path params[:name]}/configSubmit",
                                  post_params)
       end
 
@@ -148,7 +156,7 @@ module JenkinsApi
       # @param [String] view_name
       #
       def delete(view_name)
-        @client.api_post_request("/view/#{view_name}/doDelete")
+        @client.api_post_request("#{request_path view_name}/doDelete")
       end
 
       # Deletes all views (except the All view) in Jenkins.
@@ -196,7 +204,7 @@ module JenkinsApi
         job_names = []
         raise "The view #{view_name} doesn't exists on the server"\
           unless exists?(view_name)
-        response_json = @client.api_get_request("/view/#{view_name}")
+        response_json = @client.api_get_request(request_path view_name)
         response_json["jobs"].each do |job|
           job_names << job["name"]
         end
@@ -209,7 +217,7 @@ module JenkinsApi
       # @param [String] job_name
       #
       def add_job(view_name, job_name)
-        post_msg = "/view/#{view_name}/addJobToView?name=#{job_name}"
+        post_msg = "#{request_path view_name}/addJobToView?name=#{URI.encode_www_form_component job_name}"
         @client.api_post_request(post_msg)
       end
 
@@ -219,7 +227,7 @@ module JenkinsApi
       # @param [String] job_name
       #
       def remove_job(view_name, job_name)
-        post_msg = "/view/#{view_name}/removeJobFromView?name=#{job_name}"
+        post_msg = "#{request_path view_name}/removeJobFromView?name=#{URI.encode_www_form_component job_name}"
         @client.api_post_request(post_msg)
       end
 
@@ -228,7 +236,7 @@ module JenkinsApi
       # @param [String] view_name
       #
       def get_config(view_name)
-        @client.get_config("/view/#{view_name}")
+        @client.get_config(request_path view_name)
       end
 
       # Post the configuration of a view given the view name and the config.xml
@@ -237,7 +245,7 @@ module JenkinsApi
       # @param [String] xml
       #
       def post_config(view_name, xml)
-        @client.post_config("/view/#{view_name}/config.xml", xml)
+        @client.post_config("#{request_path view_name}/config.xml", xml)
       end
 
     end

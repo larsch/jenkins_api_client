@@ -230,7 +230,6 @@ module JenkinsApi
       else
         to_get = "#{url_prefix}#{url_suffix}"
       end
-      to_get = URI.escape(to_get)
       request = Net::HTTP::Get.new(to_get)
       puts "[INFO] GET #{to_get}" if @debug
       response = make_http_request(request)
@@ -251,8 +250,7 @@ module JenkinsApi
     def api_post_request(url_prefix, form_data = {})
       # Added form_data default {} instead of nil to help with proxies
       # that barf with empty post
-      url_prefix = URI.escape("#{@jenkins_path}#{url_prefix}")
-      request = Net::HTTP::Post.new("#{url_prefix}")
+      request = Net::HTTP::Post.new("#{@jenkins_path}#{url_prefix}")
       puts "[INFO] POST #{url_prefix}" if @debug
       request.content_type = 'application/json'
       request.set_form_data(form_data)
@@ -267,8 +265,7 @@ module JenkinsApi
     # @return [String] XML configuration obtained from Jenkins
     #
     def get_config(url_prefix)
-      url_prefix = URI.escape("#{@jenkins_path}#{url_prefix}")
-      request = Net::HTTP::Get.new("#{url_prefix}/config.xml")
+      request = Net::HTTP::Get.new("#{@jenkins_path}/#{url_prefix}/config.xml")
       puts "[INFO] GET #{url_prefix}/config.xml" if @debug
       response = make_http_request(request)
       handle_exception(response, "body")
@@ -282,8 +279,7 @@ module JenkinsApi
     # @return [String] Response code returned from Jenkins
     #
     def post_config(url_prefix, xml)
-      url_prefix = URI.escape("#{@jenkins_path}#{url_prefix}")
-      request = Net::HTTP::Post.new("#{url_prefix}")
+      request = Net::HTTP::Post.new("#{@jenkins_path}#{url_prefix}")
       puts "[INFO] POST #{url_prefix}" if @debug
       request.body = xml
       request.content_type = 'application/xml'
